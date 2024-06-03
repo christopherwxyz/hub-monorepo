@@ -147,6 +147,8 @@ export const up = async (db: Kysely<any>) => {
 
   await createPartitions(db, "fids", PARTITIONS);
 
+  await db.schema.createIndex("fids_chain_event_id_index").on("fids").column("chainEventId").execute();
+
   // SIGNERS --------------------------------------------------------------------------------------
   await db.schema
     .createTable("signers")
@@ -212,6 +214,10 @@ export const up = async (db: Kysely<any>) => {
 
   await db.schema.createIndex("signers_requester_fid_index").on("signers").column("requesterFid").execute();
 
+  await db.schema.createIndex("signers_add_chain_event_id_index").on("signers").column("addChainEventId").execute();
+
+  await db.schema.createIndex("signers_remove_chain_event_id_index").on("signers").column("removeChainEventId").execute();
+
   // USERNAME PROOFS -------------------------------------------------------------------------------
   await db.schema
     .createTable("usernameProofs")
@@ -229,6 +235,8 @@ export const up = async (db: Kysely<any>) => {
     .addForeignKeyConstraint("username_proofs_fid_foreign", ["fid"], "fids", ["fid"], (cb) => cb.onDelete("cascade"))
     .execute();
 
+  await db.schema.createIndex("username_proofs_fid_index").on("usernameProofs").column("fid").execute();
+
   // FNAMES ----------------------------------------------------------------------------------------
   await db.schema
     .createTable("fnames")
@@ -244,6 +252,8 @@ export const up = async (db: Kysely<any>) => {
     .addUniqueConstraint("fnames_username_unique", ["username"])
     .addForeignKeyConstraint("fnames_fid_foreign", ["fid"], "fids", ["fid"], (cb) => cb.onDelete("cascade"))
     .execute();
+
+  await db.schema.createIndex("fnames_fid_index").on("fnames").column("fid").execute();
 
   // MESSAGES -------------------------------------------------------------------------------------
   await db.schema
@@ -464,6 +474,10 @@ export const up = async (db: Kysely<any>) => {
 
   await createPartitions(db, "links", PARTITIONS);
 
+  await db.schema.createIndex("links_fid_index").on("links").column("fid").execute();
+
+  await db.schema.createIndex("links_target_fid_index").on("links").column("targetFid").execute();
+
   // While as of time of writing (Sept 2023) targetFid is always not null, there is a potential
   // future where it could be null, depending on the link type.
   // We therefore need `nulls not distinct` so that null is treated like a normal value (requires PG 15+)
@@ -553,6 +567,8 @@ export const up = async (db: Kysely<any>) => {
 
   await createPartitions(db, "user_data", PARTITIONS);
 
+  await db.schema.createIndex("user_data_fid_index").on("userData").column("fid").execute();
+
   // STORAGE ALLOCATIONS ---------------------------------------------------------------------------
   await db.schema
     .createTable("storageAllocations")
@@ -593,6 +609,8 @@ export const up = async (db: Kysely<any>) => {
     .on("storageAllocations")
     .columns(["fid", "expiresAt"])
     .execute();
+
+  await db.schema.createIndex("storage_allocations_chain_event_id_index").on("storageAllocations").column("chainEventId").execute();
 };
 
 // biome-ignore lint/suspicious/noExplicitAny: legacy code, avoid using ignore for new code
